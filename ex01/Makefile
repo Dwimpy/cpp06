@@ -1,4 +1,4 @@
-NAME	:= ScalarConverter
+NAME	:= Serializer
 
 CC		:= c++
 RM		:= rm
@@ -11,7 +11,7 @@ MAINFILE := main.cpp
 
 HEADERS := -I $(INCLUDE)
 
-SRC		:= ScalarConverter.cpp
+SRC		:= Serializer.cpp
  
 SRCS    := $(patsubst %.cpp, $(SRC_DIR)/%.cpp, $(SRC))
 OBJS    := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))

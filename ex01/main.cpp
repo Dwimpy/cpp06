@@ -11,14 +11,14 @@
 /* ************************************************************************** */
 
 #include <iostream>
-#include "ScalarConverter.hpp"
+#include <Serializer.hpp>
 
-int main(int argc, char **argv)
+int main()
 {
-	if (argc == 2) {
-		ScalarConverter::convert(std::string(argv[1]));
-	}
-	else
-		std::cerr << "Require at least 1 argument" << std::endl;
-	return (1);
+    Data	myData;
+    myData.myInt = 123;
+    myData.myStr = "hello world";
+
+    std::cout << "myInt: " << Serializer::deserialize(Serializer::serialize( &myData ))->myInt << std::endl;
+    std::cout << "myStr: " << Serializer::deserialize(Serializer::serialize( &myData ))->myStr << std::endl;
 }

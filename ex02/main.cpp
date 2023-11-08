@@ -11,14 +11,22 @@
 /* ************************************************************************** */
 
 #include <iostream>
-#include "ScalarConverter.hpp"
+#include <Base.hpp>
 
-int main(int argc, char **argv)
+void	leaks() {
+	system("leaks Base");
+}
+
+int main()
 {
-	if (argc == 2) {
-		ScalarConverter::convert(std::string(argv[1]));
+ 	unsigned int seed = static_cast<unsigned int>(std::time(0)) ^ static_cast<unsigned int>(getpid());
+	std::srand(seed);
+	Base *base;
+	atexit(leaks);
+	for (int i = 0; i < 10; ++i) {
+		base = generate();
+		identify(base);
+		identify(*base);
+		delete base;
 	}
-	else
-		std::cerr << "Require at least 1 argument" << std::endl;
-	return (1);
 }

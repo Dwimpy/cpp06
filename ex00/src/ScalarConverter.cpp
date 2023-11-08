@@ -6,6 +6,8 @@ Literals<char> ScalarConverter::_char = 0;
 Literals<int> ScalarConverter::_int = 0;
 Literals<float> ScalarConverter::_float = 0.0f;
 Literals<double> ScalarConverter::_double = 0.0;
+std::string	ScalarConverter::_special = "";
+
 t_ScalarType ScalarConverter::_scalar_type = UNKNOWN;
 
 ScalarConverter::ScalarConverter() {}
@@ -20,6 +22,15 @@ ScalarConverter &ScalarConverter::operator=(const ScalarConverter &copy)
 {
 	(void)copy;
 	return (*this);
+}
+
+void ScalarConverter::reset() {
+	_char = 0;
+	_int = 0;
+	_float = 0.0f;
+	_double = 0.0;
+	_scalar_type = UNKNOWN;
+	_special = "";
 }
 
 void ScalarConverter::convert(const std::string &input)
@@ -37,11 +48,12 @@ void ScalarConverter::convert(const std::string &input)
 				break ;
 			case SPECIAL:
 				break ;
-			case UNKNOWN:
+			case UNKNOWN: std::cout << "Invalid input" << std::endl;
 				break ;
 		}
 	}
 	printData();
+	reset();
 }
 
 void	ScalarConverter::printData()
@@ -55,6 +67,9 @@ void	ScalarConverter::printData()
 		std::cout << std::setw(10) << "Float: " << _float << "\n";
 		std::cout << std::setw(10) << "Double: " << _double << "\n";
 		std::cout << std::setw(25) << std::setfill('-') << "\n";
+	}
+	else if (_scalar_type == SPECIAL) {
+		printSpecial();
 	}
 }
 
@@ -147,10 +162,13 @@ void ScalarConverter::convertFromDouble()
 
 bool ScalarConverter::checkChar(const std::string &input)
 {
-	if (input.size() == 3 && input[0] == '\'' && input[2] == '\'') {
-		_char.setValue(input[1]);
+	if (input.size() == 1 &&
+		input.at(0) > std::numeric_limits<char>::min() &&
+		input.at(0) < std::numeric_limits<char>::max() &&
+		!std::isdigit(input.at(0))) {
+		_char.setValue(input.at(0));
 		_char.setSuccess(true);
-		std::cout << "Input: " << input[1] << "\n"
+		std::cout << "Input: " << input.at(0) << "\n"
 		  << std::setw(12) << std::right
 		  << "Type: Char\n";
 		_char.setSuccess(true);
@@ -161,7 +179,7 @@ bool ScalarConverter::checkChar(const std::string &input)
 
 bool ScalarConverter::checkInt(const std::string &input)
 {
-	for (int i = 0; i < input.size(); ++i) {
+	for (size_t i = 0; i < input.size(); ++i) {
 		if (!std::isdigit(input[i]))
 			return (false);
 	}
@@ -184,17 +202,19 @@ bool ScalarConverter::checkFloat(const std::string &input)
 		beforeDot = input.substr(0, idx);
 		afterDot = input.substr(idx + 1, input.size() - 1);
 	}
+	else
+		return (false);
 
-	for (int i = 0; i < beforeDot.size(); ++i) {
+	for (size_t i = 0; i < beforeDot.size(); ++i) {
 		if (!std::isdigit(beforeDot[i]))
 			return (false);
 	}
-	for (int i = 0; i < afterDot.size() - 1; ++i) {
+	for (size_t i = 0; i < afterDot.size() - 1; ++i) {
 		if (!std::isdigit(afterDot[i]))
 			return (false);
 	}
 
-	if (afterDot.back() != 'f')
+	if (afterDot[afterDot.length() - 1] != 'f')
 		return (false);
 	_float.setValue(std::strtof(input.c_str(), NULL));
 	std::cout << "Input: " << input << "\n"
@@ -216,12 +236,14 @@ bool ScalarConverter::checkDouble(const std::string &input)
 		afterDot = input.substr(idx + 1, input.size() - 1);
 
 	}
+	else
+		return (false);
 
-	for (int i = 0; i < beforeDot.size(); ++i) {
+	for (size_t i = 0; i < beforeDot.size(); ++i) {
 		if (!std::isdigit(beforeDot[i]))
 			return (false);
 	}
-	for (int i = 0; i < afterDot.size(); ++i) {
+	for (size_t i = 0; i < afterDot.size(); ++i) {
 		if (!std::isdigit(afterDot[i]))
 			return (false);
 	}
@@ -236,21 +258,33 @@ bool ScalarConverter::checkDouble(const std::string &input)
 
 
 bool ScalarConverter::checkSpecial(const std::string &input) {
-	std::string specials[7] = {"-inf", "+inf", "nan", "-inff", "+inff", "nanf", "inf"};
-	std::string *str = std::find(std::begin(specials), std::end(specials), input);
-	if(str != std::end(specials) && input == *str) {
-		return (true);
+	std::string specials[8] = {"-inf", "+inf", "inf", "nan", "-inff", "+inff", "nanf", "inff"};
+	for (ssize_t i = 0; i < 8; ++i) {
+		if (input == specials[i])
+		{
+			_special = specials[i];
+			return (true);
+		}
 	}
 	return (false);
 }
 
-
-
-std::ostream &operator<<(std::ostream &os, const ScalarConverter &conv) {
-	os << "Conversion: \n"
-	<< std::setw(14) << std::right;
-	return (os);
+void ScalarConverter::printSpecial() {
+	std::cout << std::setw(18) << std::right << "Conversion: \n";
+	std::cout << std::setw(25) << std::setfill('-') << "\n" << std::setfill(' ');
+	std::cout << std::setw(10) << "   Char: impossible" << "\n";
+	std::cout << std::setw(10) << "   Int: impossible" << "\n";
+	if (_special == "-inf" || _special == "+inf" || _special == "inf" || _special == "nan") {
+		std::cout << std::setw(10) << "Float: " << _special + "f" << "\n";
+		std::cout << std::setw(10) << "Double: " << _special << "\n";
+	}
+	else if (_special == "-inff" || _special == "+inff" || _special == "inff" || _special == "nanf") {
+		std::cout << std::setw(10) << "Float: " << _special << "\n";
+		std::cout << std::setw(10) << "Double: " << _special.substr(0, _special.length() - 1) << "\n";
+	}
+	std::cout << std::setw(25) << std::setfill('-') << "\n";
 }
+
 
 void	ScalarConverter::initialize() {
 	_char.setSuccess(false);

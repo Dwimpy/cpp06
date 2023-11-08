@@ -2,6 +2,9 @@
 #include <iostream>
 #include <iomanip>
 #include <typeinfo>
+#include <limits>
+#include <cstdlib>
+
 
 template<typename T>
 class Literals {
@@ -34,7 +37,7 @@ std::ostream &operator<<(std::ostream &os, Literals<T> &literal)
 		os << literal.getValue();
 	else if (typeid(T) == typeid(float))
 		os << std::fixed << std::setprecision(1) << literal.getValue() << "f";
-	else if (typeid(T) == typeid(double ))
+	else if (typeid(T) == typeid(double))
 		os << std::fixed << std::setprecision(1) << literal.getValue();
 	else
 		os << "";
@@ -67,6 +70,7 @@ class ScalarConverter {
 	static Literals<float>		_float;
 	static Literals<double>		_double;
 	static t_ScalarType			_scalar_type;
+	static std::string			_special;
 
 	static bool parseType(const std::string &input);
 	static bool checkInt(const std::string &input);
@@ -82,5 +86,7 @@ class ScalarConverter {
 	static void printData();
 	static void initialize();
 
+	static void printSpecial();
+	static void reset();
 };
 
